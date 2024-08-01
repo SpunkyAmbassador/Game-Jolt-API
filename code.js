@@ -42,33 +42,40 @@ function getMD5Hash(text) {
 ////////////////////////////////////////////////// Trophies //////////////////////////////////////////////////
 
 // Fetch - Fetches trophies with various attributes.
-RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Fetch", async (getAllTrophies, achieved, trophy_id) => {
+RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Fetch", async (getAllTrophies, achieved, trophy_id, successVariableID) => {
     let trophiesURL;
 
     if (getAllTrophies) {
         trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}${privateAPIkey}`;
+        const md5 = getMD5Hash(trophiesURL);
+        trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}&signature=${md5}`;
     } else if (achieved) {
         trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}&achieved=true${privateAPIkey}`;
+        const md5 = getMD5Hash(trophiesURL);
+        trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}&achieved=true&signature=${md5}`;
     } else if (trophy_id !== 0) {
         trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}${privateAPIkey}`;
+        const md5 = getMD5Hash(trophiesURL);
+        trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}&signature=${md5}`;
     }
-
-    const md5 = getMD5Hash(trophiesURL);
-
-    trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}&signature=${md5}`;
 
     try {
         const response = await fetch(trophiesURL);
         const data = await response.json();
-        // console.log(data["response"]["trophies"]);
-        console.log(data);
+        if (data.response.success == "true") {
+            if (successVariableID !== -1) {
+                RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+            }
+        } else {
+            console.error(`There was an error: ${data.response.message}`);
+        }
     } catch (error) {
-        console.error(error);
+        console.error(`There was an error: ${error}`);
     }
 });
 
 // Add Achieved - Sets a trophy as achieved for a particular user.
-RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Add Achieved", async (trophy_id) => {
+RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Add Achieved", async (trophy_id, successVariableID) => {
     let trophiesURL = `${baseURL}/trophies/add-achieved/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}${privateAPIkey}`;
 
     const md5 = getMD5Hash(trophiesURL);
@@ -78,14 +85,20 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Add Achieved", async
     try {
         const response = await fetch(trophiesURL);
         const data = await response.json();
-        console.log(data);
+        if (data.response.success == "true") {
+            if (successVariableID !== -1) {
+                RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+            }
+        } else {
+            console.error(`There was an error: ${data.response.message}`);
+        }
     } catch (error) {
-        console.error(error);
+        console.error(`There was an error: ${error}`);
     }
 });
 
 // Remove Achieved - Remove a previously achieved trophy for a particular user.
-RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Remove Achieved", async (trophy_id) => {
+RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Remove Achieved", async (trophy_id, successVariableID) => {
     let trophiesURL = `${baseURL}/trophies/remove-achieved/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}${privateAPIkey}`;
 
     const md5 = getMD5Hash(trophiesURL);
@@ -95,7 +108,75 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Remove Achieved", as
     try {
         const response = await fetch(trophiesURL);
         const data = await response.json();
-        console.log(data);
+        if (data.response.success == "true") {
+            if (successVariableID !== -1) {
+                RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+            }
+        } else {
+            console.error(`There was an error: ${data.response.message}`);
+        }
+    } catch (error) {
+        console.error(`There was an error: ${error}`);
+    }
+});
+
+////////////////////////////////////////////////// Time //////////////////////////////////////////////////
+
+// Time - A namespace to obtain time information from the Game Jolt server.
+RPM.Manager.Plugins.registerCommand(pluginName, "Time - Time Fetch", async (
+    successVariableID,
+    messageVariableID,
+    timestampVariableID,
+    timezoneVariableID,
+    yearVariableID,
+    monthVariableID,
+    dayVariableID,
+    hourVariableID,
+    minuteVariableID,
+    secondVariableID) => {
+    let timeURL = `${baseURL}/time/?game_id=${gameID}${privateAPIkey}`;
+
+    const md5 = getMD5Hash(timeURL);
+
+    timeURL = `${baseURL}/time/?game_id=${gameID}&signature=${md5}`;
+
+    try {
+        const response = await fetch(timeURL);
+        const data = await response.json();
+        if (data.response.success == "true") {
+            if (successVariableID !== -1) {
+                RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+            }
+            if (messageVariableID !== -1) {
+                RPM.Core.Game.current.variables[messageVariableID] = data.response.message;
+            }
+            if (timestampVariableID !== -1) {
+                RPM.Core.Game.current.variables[timestampVariableID] = data.response.timestamp;
+            }
+            if (timezoneVariableID !== -1) {
+                RPM.Core.Game.current.variables[timezoneVariableID] = data.response.timezone;
+            }
+            if (yearVariableID !== -1) {
+                RPM.Core.Game.current.variables[yearVariableID] = data.response.year;
+            }
+            if (monthVariableID !== -1) {
+                RPM.Core.Game.current.variables[monthVariableID] = data.response.month;
+            }
+            if (dayVariableID !== -1) {
+                RPM.Core.Game.current.variables[dayVariableID] = data.response.day;
+            }
+            if (hourVariableID !== -1) {
+                RPM.Core.Game.current.variables[hourVariableID] = data.response.hour;
+            }
+            if (minuteVariableID !== -1) {
+                RPM.Core.Game.current.variables[minuteVariableID] = data.response.minute;
+            }
+            if (secondVariableID !== -1) {
+                RPM.Core.Game.current.variables[secondVariableID] = data.response.second;
+            }
+        } else {
+            console.error(`There was an error: ${data.response.message}`);
+        }
     } catch (error) {
         console.error(error);
     }
