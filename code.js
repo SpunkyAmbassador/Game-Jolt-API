@@ -42,24 +42,25 @@ function getMD5Hash(text) {
 ////////////////////////////////////////////////// Trophies //////////////////////////////////////////////////
 
 // Fetch - Fetches trophies with various attributes.
-RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Fetch", async (getAllTrophies, achieved, trophy_id, successVariableID) => {
+RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Fetch", async (getTrophies, trophy_id, successVariableID, returnDataStoreVariableID, consoleLog) => {
     let trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}`;
 
-    if (getAllTrophies) {
-        trophiesURL += `${privateAPIkey}`;
-    } else if (achieved) {
-        trophiesURL += '&achieved=true';
-    } else if (trophy_id !== 0) {
+    if (trophy_id !== -1) {
         trophiesURL += `&trophy_id=${trophy_id}`;
+    } else {
+        if (getTrophies === -1) {
+            // Do nothing
+        } else if (getTrophies === 0) {
+            trophiesURL += '&achieved=false';
+        } else if (getTrophies === 1) {
+            trophiesURL += '&achieved=true';
+        } else {
+            console.error(`Please provide correct value for getTrophies.\nCommand aborted.`);
+        }
     }
 
-    if (getAllTrophies || achieved || trophy_id !== 0) {
-        const md5 = getMD5Hash(trophiesURL + privateAPIkey);
-        trophiesURL += `&signature=${md5}`;
-    } else {
-        console.error(`Please provide one of the following: getAllTrophies, achieved, trophy_id.\nCommand aborted.`);
-        return;
-    }
+    const md5 = getMD5Hash(trophiesURL + privateAPIkey);
+    trophiesURL += `&signature=${md5}`;
 
     try {
         const response = await fetch(trophiesURL);
@@ -67,6 +68,12 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Fetch", async (getAl
         if (data.response.success == "true") {
             if (successVariableID !== -1) {
                 RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+            }
+            if (returnDataStoreVariableID !== -1) {
+                RPM.Core.Game.current.variables[returnDataStoreVariableID] = JSON.stringify(data.response);
+            }
+            if (consoleLog) {
+                console.log(data.response);
             }
         } else {
             console.error(`There was an error: ${data.response.message}`);
