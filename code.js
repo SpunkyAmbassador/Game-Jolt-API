@@ -187,24 +187,76 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Time - Time Fetch", async (
 // Add - Adds a score for a user. (Guest accounts are not supported yet)
 RPM.Manager.Plugins.registerCommand(pluginName, "Scores - Add", async (score, sort, extra_data, table_id, successVariableID) => {
     let scoresURL = `${baseURL}/scores/add/?game_id=${gameID}&username=${username}&user_token=${userID}&score=${score}&sort=${sort}`;
+
     if (extra_data !== "" || table_id !== -1) {
         scoresURL += `&extra_data=${encodeURIComponent(extra_data)}`;
         if (table_id !== -1) {
             scoresURL += `&table_id=${table_id}`;
         }
     }
-    const md5 = getMD5Hash(scoresURL+privateAPIkey);
+
+    const md5 = getMD5Hash(scoresURL + privateAPIkey);
     scoresURL += `&signature=${md5}`;
 
     try {
         const response = await fetch(scoresURL);
         const data = await response.json();
+
         if (data.response.success == "true") {
             if (successVariableID !== -1) {
                 RPM.Core.Game.current.variables[successVariableID] = data.response.success;
             }
         } else {
             console.error(`There was an error: ${data.response.message}`);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+// Fetch - Returns a list of scores either for a user or globally for a game.
+RPM.Manager.Plugins.registerCommand(pluginName, "Scores - Fetch", async (limit, table_id, getGlobalScores, better_than, worse_than, successVariableID, returnDataStoreVariableID, consoleLog) => {
+    let scoresURL = `${baseURL}/scores/?game_id=${gameID}&limit=${limit}`;
+
+    if (!getGlobalScores) {
+        scoresURL += `&username=${username}&user_token=${userID}`;
+    }
+
+    if (table_id !== -1) {
+        scoresURL += `&table_id=${table_id}`;
+    }
+
+    if (better_than !== -1 && worse_than === -1) {
+        scoresURL += `&better_than=${better_than}`;
+    } else if (worse_than !== -1 && better_than === -1) {
+        scoresURL += `&worse_than=${worse_than}`;
+    } else {
+        console.error("Only one of better-than and worse-than can be used at the same time.\nCommand aborted.");
+        return;
+    }
+
+    const md5 = getMD5Hash(scoresURL.toString() + privateAPIkey);
+    scoresURL += `&signature=${md5}`;
+
+    try {
+        const response = await fetch(scoresURL);
+        const data = await response.json();
+
+        if (!data.response.success) {
+            console.error(`There was an error: ${data.response.message}`);
+            return;
+        }
+
+        if (consoleLog) {
+            console.log(data.response);
+        }
+
+        if (successVariableID !== -1) {
+            RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+        }
+
+        if (returnDataStoreVariableID !== -1) {
+            RPM.Core.Game.current.variables[returnDataStoreVariableID] = JSON.stringify(data.response, null, 4);
         }
     } catch (error) {
         console.error(error);
