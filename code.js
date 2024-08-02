@@ -263,3 +263,31 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Scores - Fetch", async (limit, 
     }
 });
 
+// Get Rank - Returns the rank of a particular score on a score table.
+RPM.Manager.Plugins.registerCommand(pluginName, "Scores - Get Rank", async (sort, table_id, successVariableID, rankVariableID) => {
+    let scoresURL = `${baseURL}/scores/get-rank/?game_id=${gameID}&sort=${sort}`;
+
+    if (table_id !== -1) {
+        scoresURL += `&table_id=${table_id}`;
+    }
+
+    const md5 = getMD5Hash(scoresURL + privateAPIkey);
+    scoresURL += `&signature=${md5}`;
+
+    try {
+        const response = await fetch(scoresURL);
+        const data = await response.json();
+        if (data.response.success == "true") {
+            if (successVariableID !== -1) {
+                RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+            }
+            if (rankVariableID !== -1) {
+                RPM.Core.Game.current.variables[rankVariableID] = data.response.rank;
+            }
+        } else {
+            console.error(`There was an error: ${data.response.message}`);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+});
