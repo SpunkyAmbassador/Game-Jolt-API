@@ -43,20 +43,22 @@ function getMD5Hash(text) {
 
 // Fetch - Fetches trophies with various attributes.
 RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Fetch", async (getAllTrophies, achieved, trophy_id, successVariableID) => {
-    let trophiesURL;
+    let trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}`;
 
     if (getAllTrophies) {
-        trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}${privateAPIkey}`;
-        const md5 = getMD5Hash(trophiesURL);
-        trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}&signature=${md5}`;
+        trophiesURL += `${privateAPIkey}`;
     } else if (achieved) {
-        trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}&achieved=true${privateAPIkey}`;
-        const md5 = getMD5Hash(trophiesURL);
-        trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}&achieved=true&signature=${md5}`;
+        trophiesURL += '&achieved=true';
     } else if (trophy_id !== 0) {
-        trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}${privateAPIkey}`;
-        const md5 = getMD5Hash(trophiesURL);
-        trophiesURL = `${baseURL}/trophies/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}&signature=${md5}`;
+        trophiesURL += `&trophy_id=${trophy_id}`;
+    }
+
+    if (getAllTrophies || achieved || trophy_id !== 0) {
+        const md5 = getMD5Hash(trophiesURL + privateAPIkey);
+        trophiesURL += `&signature=${md5}`;
+    } else {
+        console.error(`Please provide one of the following: getAllTrophies, achieved, trophy_id.\nCommand aborted.`);
+        return;
     }
 
     try {
@@ -76,11 +78,11 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Fetch", async (getAl
 
 // Add Achieved - Sets a trophy as achieved for a particular user.
 RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Add Achieved", async (trophy_id, successVariableID) => {
-    let trophiesURL = `${baseURL}/trophies/add-achieved/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}${privateAPIkey}`;
+    let trophiesURL = `${baseURL}/trophies/add-achieved/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}`;
 
-    const md5 = getMD5Hash(trophiesURL);
+    const md5 = getMD5Hash(trophiesURL + privateAPIkey);
 
-    trophiesURL = `${baseURL}/trophies/add-achieved/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}&signature=${md5}`;
+    trophiesURL += `&signature=${md5}`;
 
     try {
         const response = await fetch(trophiesURL);
@@ -99,11 +101,11 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Add Achieved", async
 
 // Remove Achieved - Remove a previously achieved trophy for a particular user.
 RPM.Manager.Plugins.registerCommand(pluginName, "Trophies - Remove Achieved", async (trophy_id, successVariableID) => {
-    let trophiesURL = `${baseURL}/trophies/remove-achieved/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}${privateAPIkey}`;
+    let trophiesURL = `${baseURL}/trophies/remove-achieved/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}`;
 
-    const md5 = getMD5Hash(trophiesURL);
+    const md5 = getMD5Hash(trophiesURL + privateAPIkey);
 
-    trophiesURL = `${baseURL}/trophies/remove-achieved/?game_id=${gameID}&username=${username}&user_token=${userID}&trophy_id=${trophy_id}&signature=${md5}`;
+    trophiesURL += `&signature=${md5}`;
 
     try {
         const response = await fetch(trophiesURL);
@@ -134,11 +136,11 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Time - Time Fetch", async (
     hourVariableID,
     minuteVariableID,
     secondVariableID) => {
-    let timeURL = `${baseURL}/time/?game_id=${gameID}${privateAPIkey}`;
+    let timeURL = `${baseURL}/time/?game_id=${gameID}`;
 
-    const md5 = getMD5Hash(timeURL);
+    const md5 = getMD5Hash(timeURL + privateAPIkey);
 
-    timeURL = `${baseURL}/time/?game_id=${gameID}&signature=${md5}`;
+    timeURL += `&signature=${md5}`;
 
     try {
         const response = await fetch(timeURL);
