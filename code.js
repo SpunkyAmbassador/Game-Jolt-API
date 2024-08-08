@@ -239,6 +239,8 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Scores - Fetch", async (limit, 
         scoresURL += `&better_than=${better_than}`;
     } else if (worse_than !== -1 && better_than === -1) {
         scoresURL += `&worse_than=${worse_than}`;
+    } else if (better_than === -1 && worse_than === -1) {
+        // Do nothing
     } else {
         console.error("Only one of better-than and worse-than can be used at the same time.\nCommand aborted.");
         return;
@@ -265,7 +267,7 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Scores - Fetch", async (limit, 
         }
 
         if (returnDataStoreVariableID !== -1) {
-            RPM.Core.Game.current.variables[returnDataStoreVariableID] = JSON.stringify(data.response, null, 4);
+            RPM.Core.Game.current.variables[returnDataStoreVariableID] = JSON.stringify(data.response);
         }
     } catch (error) {
         console.error(error);
@@ -296,6 +298,35 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Scores - Get Rank", async (sort
         } else {
             console.error(`There was an error: ${data.response.message}`);
         }
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+// Tables - Returns a list of high score tables for a game.
+RPM.Manager.Plugins.registerCommand(pluginName, "Scores - Tables", async (successVariableID, returnDataStoreVariableID, consoleLog) => {
+    let scoresURL = `${baseURL}/scores/tables/?game_id=${gameID}`;
+
+    const md5 = getMD5Hash(scoresURL + privateAPIkey);
+    scoresURL += `&signature=${md5}`;
+
+    try {
+        const response = await fetch(scoresURL);
+        const data = await response.json();
+        if (data.response.success == "true") {
+            if (successVariableID !== -1) {
+                RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+            }
+            if (returnDataStoreVariableID !== -1) {
+                RPM.Core.Game.current.variables[returnDataStoreVariableID] = JSON.stringify(data.response);
+            }
+            if (consoleLog) {
+                console.log(data.response);
+            }
+        } else {
+            console.error(`There was an error: ${data.response.message}`);
+        }
+        console.log(data.response);
     } catch (error) {
         console.error(error);
     }
