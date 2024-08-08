@@ -425,3 +425,31 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Sessions - Check", async (succe
         console.error(`There was an error: ${error}`);
     }
 });
+
+////////////////////////////////////////////////// Friends //////////////////////////////////////////////////
+
+// Friends - A namespace to get information about users friends on Game Jolt
+RPM.Manager.Plugins.registerCommand(pluginName, "Friends - Friends", async (successVariableID, friendsVariableID) => {
+    let friendsURL = `${baseURL}/friends/?game_id=${gameID}&username=${username}&user_token=${userID}`;
+
+    const md5 = getMD5Hash(friendsURL + privateAPIkey);
+    friendsURL += `&signature=${md5}`;
+
+    try {
+        const response = await fetch(friendsURL);
+        const data = await response.json();
+        if (data.response.success == "true") {
+            if (successVariableID !== -1) {
+                RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+            }
+            if (friendsVariableID !== -1) {
+                RPM.Core.Game.current.variables[friendsVariableID] = JSON.stringify(data.response.friends);
+            }
+        } else {
+            console.error(`There was an error: ${data.response.message}`);
+        }
+        console.log(data.response);
+    } catch (error) {
+        console.error(`There was an error: ${error}`);
+    }
+});
