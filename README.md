@@ -4,7 +4,7 @@ Game Jolt API Plugin for RPG Paper Maker
 Features supported by this plugin -
 - [ ] - [Data Store](https://gamejolt.com/game-api/doc/data-store)
 - [x] - [Time](https://gamejolt.com/game-api/doc/time)
-- [ ] - [Scores](https://gamejolt.com/game-api/doc/scores)
+- [x] - [Scores](https://gamejolt.com/game-api/doc/scores)
 - [ ] - [Sessions](https://gamejolt.com/game-api/doc/sessions)
 - [x] - [Trophies](https://gamejolt.com/game-api/doc/trophies)
 - [ ] - [Users](https://gamejolt.com/game-api/doc/users)
