@@ -326,8 +326,53 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Scores - Tables", async (succes
         } else {
             console.error(`There was an error: ${data.response.message}`);
         }
-        console.log(data.response);
     } catch (error) {
         console.error(error);
+    }
+});
+
+////////////////////////////////////////////////// Sessions //////////////////////////////////////////////////
+
+// Open - Opens a game session for a particular user and allows you to tell Game Jolt that a user is playing your game.
+RPM.Manager.Plugins.registerCommand(pluginName, "Sessions - Open", async (successVariableID) => {
+    let sessionsURL = `${baseURL}/sessions/open/?game_id=${gameID}&username=${username}&user_token=${userID}`;
+
+    const md5 = getMD5Hash(sessionsURL + privateAPIkey);
+    sessionsURL += `&signature=${md5}`;
+
+    try {
+        const response = await fetch(sessionsURL);
+        const data = await response.json();
+        if (data.response.success == "true") {
+            if (successVariableID !== -1) {
+                RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+            }
+        } else {
+            console.error(`There was an error: ${data.response.message}`);
+        }
+    } catch (error) {
+        console.error(`There was an error: ${error}`);
+    }
+});
+
+// Close - Closes the active session.
+RPM.Manager.Plugins.registerCommand(pluginName, "Sessions - Close", async (successVariableID) => {
+    let sessionsURL = `${baseURL}/sessions/close/?game_id=${gameID}&username=${username}&user_token=${userID}`;
+
+    const md5 = getMD5Hash(sessionsURL + privateAPIkey);
+    sessionsURL += `&signature=${md5}`;
+
+    try {
+        const response = await fetch(sessionsURL);
+        const data = await response.json();
+        if (data.response.success == "true") {
+            if (successVariableID !== -1) {
+                RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+            }    
+        } else {
+            console.error(`There was an error: ${data.response.message}`);
+        }
+    } catch (error) {
+        console.error(`There was an error: ${error}`);
     }
 });
