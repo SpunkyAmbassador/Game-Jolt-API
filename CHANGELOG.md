@@ -1,3 +1,14 @@
+# 1.2.0
+
+### New
+- Added [Scores API](https://gamejolt.com/game-api/doc/scores)
+
+### Updated
+- Some URL constructors (4615a8522edd30ca991e3fe09c4b121ba699e1e2)
+- "Trophies - Fetch" command (5454da7fc503818c5349c8aa5e947a544645d8a9)
+
+---
+
 # 1.1.0
 
 ### New
