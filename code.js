@@ -368,9 +368,58 @@ RPM.Manager.Plugins.registerCommand(pluginName, "Sessions - Close", async (succe
         if (data.response.success == "true") {
             if (successVariableID !== -1) {
                 RPM.Core.Game.current.variables[successVariableID] = data.response.success;
-            }    
+            }
         } else {
             console.error(`There was an error: ${data.response.message}`);
+        }
+    } catch (error) {
+        console.error(`There was an error: ${error}`);
+    }
+});
+
+// Ping - Pings an open session to tell the system that it's still active.
+RPM.Manager.Plugins.registerCommand(pluginName, "Sessions - Ping", async (status, successVariableID) => {
+    let sessionsURL = `${baseURL}/sessions/ping/?game_id=${gameID}&username=${username}&user_token=${userID}`;
+
+    if (status === "idle" || status === "active") {
+        sessionsURL += `&status=${status}`;
+    } else if (status === "") {
+        // Do nothing
+    } else {
+        console.error(`Invalid status: ${status}\nCommand aborted.`);
+        return;
+    }
+
+    const md5 = getMD5Hash(sessionsURL + privateAPIkey);
+    sessionsURL += `&signature=${md5}`;
+
+    try {
+        const response = await fetch(sessionsURL);
+        const data = await response.json();
+        if (data.response.success == "true") {
+            if (successVariableID !== -1) {
+                RPM.Core.Game.current.variables[successVariableID] = data.response.success;
+            }
+        } else {
+            console.error(`There was an error: ${data.response.message}`);
+        }
+    } catch (error) {
+        console.error(`There was an error: ${error}`);
+    }
+});
+
+// Check - Checks to see if there is an open session for the user.
+RPM.Manager.Plugins.registerCommand(pluginName, "Sessions - Check", async (successVariableID) => {
+    let sessionsURL = `${baseURL}/sessions/check/?game_id=${gameID}&username=${username}&user_token=${userID}`;
+
+    const md5 = getMD5Hash(sessionsURL + privateAPIkey);
+    sessionsURL += `&signature=${md5}`;
+
+    try {
+        const response = await fetch(sessionsURL);
+        const data = await response.json();
+        if (successVariableID !== -1) {
+            RPM.Core.Game.current.variables[successVariableID] = data.response.success;
         }
     } catch (error) {
         console.error(`There was an error: ${error}`);
