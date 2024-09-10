@@ -1,3 +1,21 @@
+# 2.0.0
+
+### New
+
+- 3 new endpoints
+    - Data Store
+    - Friends
+    - Sessions
+
+### Updated
+
+- successVariableID Logic - Now instead of defining sVID in every command, define sVID in parameter and it's value will be used in every command.
+
+
+**IMPORTANT**: Due to changing of successVariableID Logic, old versions (1.x) won't work. If you update this plugin to v2, you have to update Game Jolt API commands everywhere in your game.
+
+---
+
 # 1.2.0
 
 ### New
